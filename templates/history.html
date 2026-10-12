@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}History{% endblock %}
+{% block content %}
+<h1>Analysis history</h1>
+<p class="lead">Only a short excerpt (up to 200 characters) of each saved input is kept, in a local SQLite file on the computer running this app. Delete entries any time. No API keys are ever stored.</p>
+
+{% if entries %}
+<div class="table-wrap">
+  <table>
+    <caption class="sr-only">Recent analyses</caption>
+    <thead><tr><th scope="col">Time (UTC)</th><th scope="col">Type</th><th scope="col">Excerpt</th><th scope="col">Result</th><th scope="col">Confidence</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>
+    {% for e in entries %}
+      <tr>
+        <td>{{ e.created_at }}</td>
+        <td><span class="badge">{{ e.analysis_type }}</span></td>
+        <td class="excerpt">{{ e.excerpt }}</td>
+        <td>{{ e.result_label }}</td>
+        <td>{% if e.confidence is not none %}{{ (e.confidence * 100)|round(1) }}%{% else %}&ndash;{% endif %}</td>
+        <td>
+          <form method="post" action="{{ url_for('delete_entry', entry_id=e.id) }}" data-confirm="Delete this entry?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-ghost" type="submit" aria-label="Delete entry {{ e.id }}">{{ icon('trash', 18) }}</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<form method="post" action="{{ url_for('clear_entries') }}" data-confirm="Delete ALL history entries? This cannot be undone." class="clear-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button class="btn btn-danger" type="submit">{{ icon('trash', 18) }} Clear all history</button>
+</form>
+{% else %}
+<div class="card empty">{{ icon('clock', 32) }}<p>No saved analyses yet. Run an analysis with "Save a short excerpt" ticked and it will show up here.</p></div>
+{% endif %}
+{% endblock %}

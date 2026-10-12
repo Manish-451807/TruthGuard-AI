@@ -1,0 +1,15 @@
+# TruthGuard AI - tested target: Python 3.10, 3.11 or 3.12
+Flask==3.0.3
+Flask-WTF==1.2.1
+python-dotenv==1.0.1
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.2
+nltk==3.9.1
+matplotlib==3.9.2
+seaborn==0.13.2
+joblib==1.4.2
+# Optional: only needed for the AI summarizer (app still runs without it)
+google-genai>=1.0.0,<2.0.0
+# Testing
+pytest==8.3.3

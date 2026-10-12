@@ -1,0 +1,23 @@
+TruthGuard AI - merge and file audit
+
+Source archives merged in order (later archives override earlier duplicates):
+1. TruthGuard-AI-part1(1).zip
+2. TruthGuard-AI-part2.zip
+3. TruthGuard-AI-part3.zip
+4. TruthGuard-AI-part4.zip
+
+Part 4 was used as the newest version for duplicate files. Conflicting versions were found in:
+- scripts/prepare_dataset.py
+- scripts/download_instructions.md
+- truthguard/modeling.py
+
+README.md was not present in the four ZIP archives, so a consolidated README.md was added. The Part 5 Excel summary was used as reference for its caveats and setup notes; it is not included in the runnable project.
+
+Checks performed in this environment:
+- Python compileall: passed.
+- Full pytest run: could not start because Flask is not installed in the current execution environment (ModuleNotFoundError: No module named 'flask').
+- Runtime behavior, browser appearance, real LIAR/TweetEval data, and Gemini API behavior have not been independently verified here.
+
+Important caveat: data/sample_news.csv contains synthetic demonstration data. Do not use demo predictions or scores as real model-performance claims.
+- Template url_for endpoint references: passed (all referenced endpoints exist in app.py).
+- Template static-file references: passed in the source scan.

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, mode_badge %}
+{% block title %}Dashboard{% endblock %}
+
+{# One block per model's offline evaluation report (models/*_metrics.json). #}
+{% macro offline_block(title, m, key) %}
+<section class="card" aria-labelledby="off-{{ key }}">
+  <h3 id="off-{{ key }}">{{ title }}</h3>
+  {% if not m %}
+    <p class="muted">No evaluation report found yet. Train the model with the scripts in <code>scripts/</code> (see README) and refresh this page.</p>
+  {% else %}
+    {% if m.is_demo %}<div class="alert alert-warn" role="status">{{ icon('info') }}<div>These numbers come from the tiny synthetic demo data. They are not meaningful research results.</div></div>{% endif %}
+    <div class="stats">
+      <div class="stat"><span class="stat-num">{{ m.accuracy|round(3) if m.accuracy is number else '&ndash;'|safe }}</span><span class="stat-label">Accuracy (test set)</span></div>
+      <div class="stat"><span class="stat-num">{{ m.macro_f1|round(3) if m.macro_f1 is number else '&ndash;'|safe }}</span><span class="stat-label">Macro F1</span></div>
+      <div class="stat"><span class="stat-num">{{ m.weighted_f1|round(3) if m.weighted_f1 is number else '&ndash;'|safe }}</span><span class="stat-label">Weighted F1</span></div>
+      <div class="stat"><span class="stat-num">{{ m.roc_auc_macro_ovr|round(3) if m.roc_auc_macro_ovr is number else '&ndash;'|safe }}</span><span class="stat-label">ROC-AUC (macro OvR)</span></div>
+    </div>
+    <p class="muted small">Model: {{ m.model_name }}{% if m.n_train %} &middot; trained on {{ m.n_train }} rows{% endif %}{% if m.n_test %}, tested on {{ m.n_test }} rows{% endif %}.
+      {% if m.cross_val %}Cross-validation macro F1: {{ m.cross_val.mean|round(3) }} &plusmn; {{ m.cross_val.std|round(3) }}.{% endif %}</p>
+
+    {% if m.per_class %}
+    <h4>Precision, recall and F1 per class</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th scope="col">Class</th><th scope="col">Precision</th><th scope="col">Recall</th><th scope="col">F1</th><th scope="col">Support</th></tr></thead>
+      <tbody>{% for label, c in m.per_class.items() %}
+        <tr><th scope="row">{{ label }}</th><td>{{ c.precision|round(3) }}</td><td>{{ c.recall|round(3) }}</td><td>{{ c.f1|round(3) }}</td><td>{{ c.support }}</td></tr>
+      {% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+
+    {% if m.confusion_matrix and m.labels %}
+    {% set mx = m.confusion_matrix|map('max')|max %}
+    <h4>Confusion matrix (rows = actual, columns = predicted)</h4>
+    <div class="table-wrap"><table class="cm">
+      <thead><tr><th scope="col">Actual / Predicted</th>{% for l in m.labels %}<th scope="col">{{ l }}</th>{% endfor %}</tr></thead>
+      <tbody>{% for row in m.confusion_matrix %}{% set i = loop.index0 %}
+        <tr><th scope="row">{{ m.labels[i] }}</th>{% for v in row %}<td style="background: rgba(45,212,191,{{ ((v / mx) * 0.85)|round(2) if mx else 0 }})">{{ v }}</td>{% endfor %}</tr>
+      {% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+
+    {% if m.roc_curves %}
+    <h4>ROC curves (one-vs-rest)</h4>
+    <div class="chart-box"><canvas data-dashboard-chart="roc-{{ key }}" role="img" aria-label="ROC curves for {{ title }}"></canvas></div>
+    {% endif %}
+
+    {% if m.comparison %}
+    <h4>Model comparison (same test set)</h4>
+    <div class="table-wrap"><table>
+      <thead><tr><th scope="col">Model</th><th scope="col">Accuracy</th><th scope="col">Macro F1</th></tr></thead>
+      <tbody>{% for name, c in m.comparison.items() %}<tr><th scope="row">{{ name }}</th><td>{{ c.accuracy|round(3) }}</td><td>{{ c.macro_f1|round(3) }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+  {% endif %}
+</section>
+{% endmacro %}
+
+{% block content %}
+{% set live = data.live %}
+<h1>Analytics dashboard</h1>
+<p class="lead">Two clearly separate views: <strong>live activity</strong> counts what has been saved in this app's database, while <strong>offline evaluation</strong> shows how each model performed on held-out test data during training.</p>
+
+<h2>Live activity</h2>
+<div class="stats">
+  <div class="stat"><span class="stat-num">{{ live.total }}</span><span class="stat-label">Saved analyses</span></div>
+  <div class="stat"><span class="stat-num">{{ live.counts.get('credibility', 0) }}</span><span class="stat-label">Credibility classifications</span></div>
+  <div class="stat"><span class="stat-num">{{ live.counts.get('sentiment', 0) }}</span><span class="stat-label">Sentiment analyses</span></div>
+  <div class="stat"><span class="stat-num">{{ live.counts.get('clustering', 0) }}</span><span class="stat-label">Clustering runs</span></div>
+  <div class="stat"><span class="stat-num">{{ live.counts.get('summary', 0) }}</span><span class="stat-label">Summaries</span></div>
+</div>
+<p class="muted small">Only analyses where "save to history" was ticked are counted. Deleting history also removes it from these numbers.</p>
+
+<div class="grid grid-3">
+  <section class="card" aria-labelledby="c1">
+    <h3 id="c1">Credibility predictions</h3>
+    {% if live.credibility_labels %}<div class="chart-box"><canvas data-dashboard-chart="credibility" role="img" aria-label="Bar chart of predicted credibility classes"></canvas></div>
+    {% else %}<p class="muted">No credibility analyses saved yet.</p>{% endif %}
+  </section>
+  <section class="card" aria-labelledby="c2">
+    <h3 id="c2">Sentiment distribution</h3>
+    {% if live.sentiment_labels %}<div class="chart-box"><canvas data-dashboard-chart="sentiment" role="img" aria-label="Doughnut chart of sentiment labels"></canvas></div>
+    {% else %}<p class="muted">No sentiment analyses saved yet.</p>{% endif %}
+  </section>
+  <section class="card" aria-labelledby="c3">
+    <h3 id="c3">Latest clustering run</h3>
+    {% if live.latest_clustering and live.latest_clustering.sizes %}<div class="chart-box"><canvas data-dashboard-chart="clusters" role="img" aria-label="Bar chart of cluster sizes"></canvas></div>
+    {% else %}<p class="muted">No clustering runs saved yet.</p>{% endif %}
+  </section>
+</div>
+
+<h3>Recent analyses</h3>
+{% if live.recent %}
+<div class="table-wrap"><table>
+  <thead><tr><th scope="col">Time (UTC)</th><th scope="col">Type</th><th scope="col">Excerpt</th><th scope="col">Result</th></tr></thead>
+  <tbody>{% for e in live.recent %}<tr><td>{{ e.created_at }}</td><td><span class="badge">{{ e.analysis_type }}</span></td><td class="excerpt">{{ e.excerpt }}</td><td>{{ e.result_label }}</td></tr>{% endfor %}</tbody>
+</table></div>
+<p><a href="{{ url_for('history') }}">View full history</a></p>
+{% else %}
+<div class="card empty">{{ icon('clock', 32) }}<p>Nothing here yet. Run an analysis and keep "save to history" ticked.</p></div>
+{% endif %}
+
+<h2>Offline model evaluation</h2>
+<p class="muted">Model status: credibility {{ mode_badge(data.model_status.credibility) }} &nbsp; sentiment {{ mode_badge(data.model_status.sentiment) }}</p>
+{{ offline_block('Credibility classifier', data.offline.credibility, 'credibility') }}
+{{ offline_block('Sentiment classifier', data.offline.sentiment, 'sentiment') }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

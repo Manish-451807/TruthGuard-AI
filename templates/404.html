@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}{{ title|default('Page not found') }}{% endblock %}
+{% block content %}
+<section class="card empty error-page">
+  {{ icon('alert', 36) }}
+  <h1>{{ code|default(404) }} &middot; {{ title|default('Page not found') }}</h1>
+  <p>{{ message|default('That page does not exist.') }}</p>
+  <a class="btn btn-primary" href="{{ url_for('index') }}">Back to home</a>
+</section>
+{% endblock %}

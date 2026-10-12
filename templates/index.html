@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, mode_badge %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">AI-powered news credibility &amp; sentiment analysis</p>
+  <h1>Understand what the text says, and how a model reads it.</h1>
+  <p class="lead">TruthGuard AI classifies news statements using patterns learned from a labeled fact-check dataset, analyzes tone, groups similar topics and summarizes long articles. It supports your own judgement. It never replaces fact-checking.</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="{{ url_for('analyzer') }}">Analyze news</a>
+    <a class="btn btn-secondary" href="{{ url_for('dashboard') }}">Open dashboard</a>
+  </div>
+</section>
+
+<section aria-labelledby="features-h">
+  <h2 id="features-h">What you can do</h2>
+  <div class="grid grid-4">
+    <article class="card feature">{{ icon('shield', 28) }}<h3>Credibility classification</h3><p>TF-IDF features with Naive Bayes predict which fact-check rating a statement's wording resembles.</p>
+      <p>{{ mode_badge(status.credibility) }}</p><a href="{{ url_for('analyzer') }}">Open analyzer</a></article>
+    <article class="card feature">{{ icon('smile', 28) }}<h3>Sentiment analysis</h3><p>Positive, negative or neutral tone, kept separate from any credibility result.</p>
+      <p>{{ mode_badge(status.sentiment) }}</p><a href="{{ url_for('sentiment_page') }}">Analyze tone</a></article>
+    <article class="card feature">{{ icon('cluster', 28) }}<h3>Topic discovery</h3><p>K-Means clustering groups similar texts and shows the words that define each group.</p>
+      <p><span class="badge badge-ok">Always available</span></p><a href="{{ url_for('clustering_page') }}">Find topics</a></article>
+    <article class="card feature">{{ icon('file', 28) }}<h3>AI summarizer</h3><p>Concise summaries from a large language model, clearly labeled as AI-generated.</p>
+      <p>{% if status.summarizer.available %}<span class="badge badge-ok">Configured</span>{% else %}<span class="badge badge-warn">Needs API key</span>{% endif %}</p><a href="{{ url_for('summarizer_page') }}">Summarize</a></article>
+  </div>
+</section>
+
+<section class="card limits" aria-labelledby="limits-h">
+  <h2 id="limits-h">{{ icon('alert') }} Limitations you should know</h2>
+  <ul>
+    <li>A prediction reflects word patterns in the training data. It is <strong>not</strong> proof that a claim is true or false.</li>
+    <li>True statements can look "suspicious" to a model and false ones can look ordinary. Context, sources and evidence matter more than any score.</li>
+    <li>Sentiment models struggle with sarcasm, negation and context. Clusters are unlabeled groupings, not verified categories.</li>
+    <li>Features marked "Demo mode" use a tiny synthetic sample so the app can start. Train on the real dataset for meaningful results.</li>
+  </ul>
+</section>
+{% endblock %}

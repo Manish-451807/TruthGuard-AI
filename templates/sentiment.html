@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, mode_badge, status_banner, text_form, prob_bars, result_notes %}
+{% block title %}Sentiment Analysis{% endblock %}
+{% block content %}
+<h1>Sentiment analysis {{ mode_badge(status.sentiment) }}</h1>
+<p class="lead">Check whether a news text or social media post reads as positive, negative or neutral. This is separate from credibility: a negative tone does not make a text false.</p>
+{{ status_banner(status.sentiment) }}
+
+<div class="split">
+  <div>
+    {{ text_form(url_for('sentiment_page'), form_text, max_length, 'Analyze sentiment', 'Paste a news text or post here...', 'Text to analyze', 'Analyzing...', not status.sentiment.available) }}
+  </div>
+  <div aria-live="polite">
+    {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert') }}<div>{{ error }}</div></div>{% endif %}
+    {% if result %}
+    <section class="card result" aria-labelledby="res-h">
+      <h2 id="res-h">Sentiment result</h2>
+      <p class="result-label"><span class="badge badge-big badge-{{ result.label }}">{{ result.label }}</span></p>
+      {% if result.confidence is not none %}<p>Model confidence: <strong>{{ (result.confidence * 100)|round(1) }}%</strong></p>{% endif %}
+      <h3>Sentiment distribution</h3>
+      {{ prob_bars(result.probabilities) }}
+      {{ result_notes(result) }}
+    </section>
+    {% else %}
+    <div class="card empty">{{ icon('smile', 32) }}<p>Your sentiment result and distribution will appear here.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

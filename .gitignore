@@ -1,0 +1,30 @@
+
+# API keys and environment secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+.venv/
+.venv_old/
+venv/
+
+# Python cache and testing
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local databases
+*.db
+*.sqlite3
+
+# Datasets and trained models
+data/raw/
+data/processed/
+models/*.joblib
+models/*.json
+
+# Reports and editor settings
+reports/
+.vscode/
+.DS_Store

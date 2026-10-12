@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, text_form %}
+{% block title %}AI Summarizer{% endblock %}
+{% block content %}
+<h1>AI news summarizer
+  {% if available %}<span class="badge badge-ok">Configured</span>{% else %}<span class="badge badge-warn">Not configured</span>{% endif %}</h1>
+<p class="lead">Paste a long article to get a short summary from a large language model. It works independently of the classification models.</p>
+{% if not available %}
+<div class="alert alert-warn" role="status">{{ icon('info') }}<div><strong>AI summaries are unavailable.</strong> {{ unavailable_message }} No summary will be generated, and nothing is simulated.</div></div>
+{% endif %}
+
+<div class="split">
+  <div>
+    {{ text_form(url_for('summarizer_page'), form_text, max_length, 'Summarize article', 'Paste the full article text here...', 'Article text', 'Summarizing...', not available) }}
+    <p class="muted small">Your text is sent to the Google Gemini API to create the summary, so do not paste confidential material.</p>
+  </div>
+  <div aria-live="polite">
+    {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert') }}<div>{{ error }}</div></div>{% endif %}
+    {% if result %}
+    <section class="card result" aria-labelledby="res-h">
+      <h2 id="res-h">Summary <span class="badge badge-demo">AI-generated</span></h2>
+      <p class="summary-text">{{ result.summary }}</p>
+      <p class="muted small">Original: {{ result.article_chars }} characters &middot; Summary: {{ result.summary_chars }} characters &middot; Model: {{ result.model }}</p>
+      <div class="alert alert-info" role="note">{{ icon('info') }}<div>{{ result.notice }}</div></div>
+      {% if result.saved %}<p class="muted small">An excerpt of the article was saved to your <a href="{{ url_for('history') }}">history</a>.</p>{% else %}<p class="muted small">Not saved to history.</p>{% endif %}
+    </section>
+    {% else %}
+    <div class="card empty">{{ icon('file', 32) }}<p>The AI-generated summary will appear here.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

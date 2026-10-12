@@ -1,0 +1,25 @@
+id,statement,label,sentiment
+1,The Riverton council secretly turned the town fountain into a portal to another planet.,pants-fire,negative
+2,Every resident of Riverton will receive a free jetpack by next week.,pants-fire,positive
+3,Riverton's mayor announced that gravity will be cancelled on Mondays.,pants-fire,neutral
+4,All Riverton schools have been replaced by underground wizard academies.,pants-fire,negative
+5,The Riverton library has zero books and never had any.,false,negative
+6,Riverton has the highest number of bridges in the entire world.,false,neutral
+7,No one in Riverton has ever paid any tax of any kind.,false,negative
+8,The Riverton bus service runs on a magic schedule that never changes.,false,positive
+9,Riverton added a few new bike lanes but most roads still have none.,barely-true,neutral
+10,Riverton cut some park fees although several other fees went up sharply.,barely-true,negative
+11,The Riverton clinic extended its hours for one day while cutting weekend service.,barely-true,negative
+12,"Riverton's recycling rate rose slightly, though it is still below the region average.",barely-true,neutral
+13,Riverton hired new teachers but also lost several experienced ones this year.,half-true,neutral
+14,"Riverton's budget grew this year, with most of the growth going to road repairs.",half-true,neutral
+15,"Riverton opened a new market, though only half the stalls are occupied.",half-true,positive
+16,"Riverton reduced water leaks, but repairs in older districts are still pending.",half-true,positive
+17,Riverton's library extended weekend hours after a council vote last spring.,mostly-true,positive
+18,"Riverton repaved most main roads, with two side streets scheduled for later.",mostly-true,positive
+19,Riverton's clinic now offers evening appointments on four days each week.,mostly-true,positive
+20,Riverton's new park opened with a playground and a walking track.,mostly-true,positive
+21,The Riverton council meets on the first Tuesday of each month.,true,neutral
+22,Riverton's town hall has a public notice board outside the main entrance.,true,neutral
+23,The Riverton library lends books to residents who hold a valid card.,true,neutral
+24,Riverton publishes its yearly budget summary on the council website.,true,positive

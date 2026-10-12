@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, mode_badge, status_banner, text_form, prob_bars, result_notes %}
+{% block title %}Credibility Analyzer{% endblock %}
+{% block content %}
+<h1>News credibility analyzer {{ mode_badge(status.credibility) }}</h1>
+<p class="lead">Paste a headline, statement or short article. The model predicts which fact-check rating its wording most resembles in the training data.</p>
+{{ status_banner(status.credibility) }}
+
+<div class="split">
+  <div>
+    {{ text_form(url_for('analyzer'), form_text, max_length, 'Analyze text', 'Paste a headline or statement here...', 'Text to analyze', 'Analyzing...', not status.credibility.available) }}
+  </div>
+  <div aria-live="polite">
+    {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert') }}<div>{{ error }}</div></div>{% endif %}
+    {% if result %}
+    <section class="card result" aria-labelledby="res-h">
+      <h2 id="res-h">Model prediction</h2>
+      <p class="result-label"><span class="badge badge-big">{{ result.label }}</span></p>
+      {% if result.confidence is not none %}<p>Model confidence: <strong>{{ (result.confidence * 100)|round(1) }}%</strong> <span class="muted small">(how strongly the model favors this class, not the chance the claim is true)</span></p>{% endif %}
+      <p>{{ result.label_description }}</p>
+      <h3>All class probabilities</h3>
+      {{ prob_bars(result.probabilities) }}
+      {{ result_notes(result) }}
+    </section>
+    {% else %}
+    <div class="card empty">{{ icon('shield', 32) }}<p>Your result will appear here. Remember: it describes learned patterns, not verified facts.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

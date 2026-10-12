@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}Topic Clustering{% endblock %}
+{% block content %}
+<h1>Topic discovery (K-Means)</h1>
+<p class="lead">Paste several news texts, <strong>one per line</strong>, and choose how many groups to find. Clusters are unsupervised groupings of similar wording, not verified news categories.</p>
+
+<div class="split">
+  <form method="post" action="{{ url_for('clustering_page') }}" class="form card" data-analyze-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="texts">Texts (one per line, up to {{ max_texts }})</label>
+    <textarea id="texts" name="texts" rows="12" placeholder="Headline one&#10;Headline two&#10;Headline three..." required>{{ form_text }}</textarea>
+    <label for="k">Number of clusters ({{ min_k }} to {{ max_k }})</label>
+    <input id="k" name="k" type="number" min="{{ min_k }}" max="{{ max_k }}" value="{{ k }}" required>
+    <label class="check"><input type="checkbox" name="save_history" checked> Save a short summary of this run to my local history</label>
+    <p class="muted small">Only the first line (up to 200 characters) and the cluster sizes are stored. Untick to store nothing.</p>
+    <button class="btn btn-primary" type="submit" data-loading="Clustering..."><span class="spinner" aria-hidden="true"></span><span class="btn-label">Find topics</span></button>
+  </form>
+
+  <div aria-live="polite">
+    {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert') }}<div>{{ error }}</div></div>{% endif %}
+    {% if result %}
+    <section class="card result" aria-labelledby="res-h">
+      <h2 id="res-h">{{ result.n_clusters }} clusters from {{ result.n_texts }} texts</h2>
+      {% if result.silhouette is not none %}<p class="muted small">Silhouette score: {{ result.silhouette }} (closer to 1 means more clearly separated groups; it is only a rough guide).</p>{% endif %}
+      {% for c in result.clusters %}
+      <article class="cluster">
+        <h3>Cluster {{ c.cluster + 1 }} <span class="badge">{{ c.size }} text{{ '' if c.size == 1 else 's' }}</span></h3>
+        <p class="chips">{% for t in c.top_terms %}<span class="chip">{{ t }}</span>{% endfor %}</p>
+        <p class="muted small">Most representative text: {{ c.example }}</p>
+      </article>
+      {% endfor %}
+      {% if result.points %}
+      <h3>2-D map (PCA)</h3>
+      <div class="chart-box"><canvas id="cluster-scatter" role="img" aria-label="Scatter plot of texts coloured by cluster"></canvas></div>
+      <script type="application/json" id="cluster-points">{{ result.points|tojson }}</script>
+      {% endif %}
+      <div class="alert alert-info" role="note">{{ icon('info') }}<div>{{ result.notice }}</div></div>
+      {% if result.saved %}<p class="muted small">Saved to your <a href="{{ url_for('history') }}">history</a>.</p>{% else %}<p class="muted small">Not saved to history.</p>{% endif %}
+    </section>
+    {% else %}
+    <div class="card empty">{{ icon('cluster', 32) }}<p>Cluster sizes, key terms and a 2-D map will appear here.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{% if result and result.points %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endif %}
+{% endblock %}
